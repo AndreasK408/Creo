@@ -6,6 +6,7 @@ impl ProgrammingLanguage {
         match self {
             Python(_) => &generator::python::FileNameGenerator,
             Rust(_) => &generator::rust::FileNameGenerator,
+            Java(_) => &generator::java::FileNameGenerator,
         }
     }
 }

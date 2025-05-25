@@ -1,0 +1,10 @@
+    /**
+     * Generates query parameters for the call to {{this.target_service_name}}{{this.target_endpoint_path}}.
+     */
+    private MultiValueMap<String, String> {{this.query_data_function_name}}() {
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        {{#each this.query_params}}
+        params.add("{{this.name}}", String.valueOf({{{this.fake_function_call_java}}}()));
+        {{/each}}
+        return params;
+    }

@@ -1,0 +1,18 @@
+package com.creo.generated.service; // Festes Basispaket für die Anwendungsklasse
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
+
+@SpringBootApplication
+@ComponentScan(basePackages = {
+    "com.creo.generated.service.controller",
+    "com.creo.generated.service.calls",
+    "com.creo.generated.client"
+})
+public class Application { // Fester Klassenname für die Hauptanwendung
+
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+}

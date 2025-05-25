@@ -1,0 +1,10 @@
+name: my_python_simple_app
+mode: manual
+services:
+  - name: python-simple-service
+    language: python
+    endpoints:
+      - name: getHash
+        function: hash
+      - name: getRandomNumbers
+        function: rng

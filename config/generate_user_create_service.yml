@@ -1,0 +1,8 @@
+name: my_user_create_app
+mode: manual
+services:
+  - name: user_create_executer_service
+    language: java
+    endpoints:
+      - name: executeUserCreate
+        function: user_create

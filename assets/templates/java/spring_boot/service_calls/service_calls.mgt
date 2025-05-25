@@ -1,0 +1,71 @@
+package {{package_name}};
+
+// Standard Java und Spring Imports
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.http.*;
+import org.springframework.util.MultiValueMap;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.web.util.UriComponentsBuilder;
+import com.github.javafaker.Faker;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Random;
+import java.util.Collections;
+
+{{#each imports}}
+{{{this}}};
+{{/each}}
+
+@Service
+public class {{service_calls_class_name}} {
+
+    private final RestTemplate restTemplate;
+    private final Faker faker;
+    private final Random random;
+
+    public {{service_calls_class_name}}() {
+        this.restTemplate = new RestTemplate();
+        this.faker = new Faker();
+        this.random = new Random(System.currentTimeMillis());
+    }
+
+    {{#each fake_data_functions}}
+    {{> fake_data_function_spring this}}
+
+    {{/each}}
+
+    {{#each service_call_functions}}
+    public void {{this.function_name}}() {
+        System.out.println("Executing grouped service calls for {{this.function_name}}");
+        {{#each this.individual_calls}}
+        try {
+            Object response = this.{{this.individual_call_function_name}}();
+            System.out.println("Call to {{this.target_service_name}}.{{this.target_endpoint_path}} (part of {{../function_name}}) responded: " + (response != null ? response.toString().substring(0, Math.min(response.toString().length(), 100)) : "null"));
+        } catch (Exception e) {
+            System.err.println("Error during individual call {{this.individual_call_function_name}} (part of {{../function_name}}): " + e.getMessage());
+        }
+        {{/each}}
+    }
+
+    {{/each}}
+
+    {{#each service_call_functions}}
+    {{#each this.individual_calls}}
+    {{> individual_service_call_spring this}}
+
+    {{/each}}
+    {{/each}}
+    {{#each service_call_functions}}
+    {{#each this.individual_calls}}
+    {{#if this.query_data_function_name}}
+    {{> query_data_function_spring this}}
+    {{/if}}
+    {{#if this.complex_param_function_name}}
+    {{> complex_param_function_spring this}}
+    {{/if}}
+    {{/each}}
+    {{/each}}
+}

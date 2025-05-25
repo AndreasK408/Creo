@@ -1,0 +1,8 @@
+name: my_login_app
+mode: manual
+services:
+  - name: login_executer_service
+    language: java
+    endpoints:
+      - name: executeLogin
+        function: login

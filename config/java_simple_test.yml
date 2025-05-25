@@ -1,0 +1,10 @@
+name: my_java_simple_app
+mode: manual
+services:
+  - name: java-simple-service
+    language: java
+    endpoints:
+      - name: getHash
+        function: hash
+      - name: getRandomNumbers
+        function: rng

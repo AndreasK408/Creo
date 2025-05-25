@@ -1,0 +1,8 @@
+name: my_matrix_app
+mode: manual
+services:
+  - name: matrix_executer_service
+    language: java
+    endpoints:
+      - name: executeMatrix
+        function: matrix

@@ -1,0 +1,22 @@
+package com.creo.generated.client;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import java.time.Duration; // For timeouts
+
+@Configuration
+public class HttpClientConfig {
+
+    private static final int CONNECT_TIMEOUT_MS = 5000;
+    private static final int READ_TIMEOUT_MS = 10000;
+
+    @Bean
+    public RestTemplate restTemplate(RestTemplateBuilder builder) {
+        return builder
+                .setConnectTimeout(Duration.ofMillis(CONNECT_TIMEOUT_MS))
+                .setReadTimeout(Duration.ofMillis(READ_TIMEOUT_MS))
+                .build();
+    }
+}

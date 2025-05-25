@@ -1,0 +1,8 @@
+name: my_invoice_create_app
+mode: manual
+services:
+  - name: invoice_create_executer_service
+    language: java
+    endpoints:
+      - name: executeInvoiceCreate
+        function: invoice_create

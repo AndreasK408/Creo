@@ -1,0 +1,12 @@
+import_path: hash.Hash
+is_async: false
+returns: true
+signature:
+  function: hashPassword
+  parameters:
+    - type: string
+      arg: 0
+      name: n
+      description: "The password string to hash."
+description: "Computes the Argon2 hash of the given password."
+

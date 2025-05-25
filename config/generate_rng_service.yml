@@ -1,0 +1,8 @@
+name: my_rng_app
+mode: manual
+services:
+  - name: rng_executer_service
+    language: java
+    endpoints:
+      - name: executeRng
+        function: rng

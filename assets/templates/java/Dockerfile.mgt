@@ -1,0 +1,21 @@
+FROM maven:3.9-eclipse-temurin-17 AS builder
+
+WORKDIR /usr/src/service
+
+COPY pom.xml .
+
+COPY lib ./lib
+
+COPY src ./src
+
+RUN mvn clean package -DskipTests
+
+FROM eclipse-temurin:17-jre-jammy
+
+WORKDIR /opt/service
+
+COPY --from=builder /usr/src/service/target/*.jar ./service.jar
+
+EXPOSE 80
+
+ENTRYPOINT {{entrypoint}}

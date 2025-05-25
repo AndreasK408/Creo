@@ -1,0 +1,14 @@
+application: my_hash_app # Muss mit 'name' in generate_hash_service.yml übereinstimmen
+ssh:
+  key_file: ~/.ssh/id_ed25519
+  user_name: andreaskunz
+  master_hosts:
+    - localhost
+  worker_hosts:
+    - localhost
+benchmark:
+  warmup: {rate: 1, duration: 1, pause: 1}
+  intensity: {profile: getting_started.csv} # Dummy-Datei erstellen
+  timeout: 8000
+  virtual_user: 1
+  records: 1
