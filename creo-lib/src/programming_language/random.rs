@@ -9,6 +9,7 @@ impl ProgrammingLanguage {
         match self {
             Python(_) => Box::new(rng.gen::<generator::python::Frameworks>()),
             Rust(_) => Box::new(rng.gen::<generator::rust::Frameworks>()),
+            Java(_) => Box::new(rng.gen::<generator::java::Frameworks>()),
         }
     }
 }

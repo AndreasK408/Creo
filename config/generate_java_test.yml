@@ -1,0 +1,10 @@
+name: my_java_test_app
+mode: manual
+services:
+  - name: java-user-service
+    language: java
+    endpoints:
+      - name: createUser
+        function: user_create
+      - name: getUser
+        function: user_read

@@ -1,0 +1,8 @@
+name: my_primes_app
+mode: manual
+services:
+  - name: primes_executer_service
+    language: java
+    endpoints:
+      - name: executePrimes
+        function: primes

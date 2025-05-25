@@ -1,0 +1,23 @@
+import_path: rng.RngHandler
+is_async: false
+returns: true
+signature:
+  function: generateRandomNumbers
+  parameters:
+    - arg: 0
+      name: n
+      type: integer
+      format: int32
+      description: "The number of random integers to generate."
+    - arg: 1
+      name: min
+      type: integer
+      format: int32
+      description: "The minimum value for the random integers (inclusive)."
+    - arg: 2
+      name: max
+      type: integer
+      format: int32
+      description: "The maximum value for the random integers (inclusive)."
+description: "Generates a list of 'n' random integers between 'min' and 'max'."
+    

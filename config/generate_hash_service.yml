@@ -1,0 +1,8 @@
+name: my_hash_app # Dieser Name wird in der benchmark.yml referenziert
+mode: manual
+services:
+  - name: hash-executor-service # Name des Microservices
+    language: java
+    endpoints:
+      - name: executeHash # Name des Endpunkts
+        function: hash    # Verzeichnisname deines Java hash-Handlers

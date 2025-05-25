@@ -1,0 +1,36 @@
+import_path: user_create.UserCreateHandler
+
+description: "Creates a new user in the database after validating and hashing the password."
+
+is_async: false
+
+returns: true
+
+depends_on:
+  - name: db:mongo
+    init: seed-user
+
+signature:
+  function: createUser
+
+  parameters:
+    - arg: 0
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 64
+        email:
+          type: string
+          minLength: 3
+          maxLength: 64
+        password:
+          type: string
+          minLength: 6
+          maxLength: 48
+      additionalProperties: false
+      required:
+        - username
+        - email
+        - password

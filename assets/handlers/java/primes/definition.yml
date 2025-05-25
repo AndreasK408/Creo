@@ -1,0 +1,14 @@
+import_path: primes.PrimesHandler
+description: "Simple function to generate prime numbers."
+is_async: false
+returns: true
+signature:
+  function: generateFirstPrimes
+  parameters:
+    - arg: 0
+      type: integer
+      format: int32
+      minimum: 1
+      exclusiveMinimum: false
+      maximum: 100
+      exclusiveMaximum: false

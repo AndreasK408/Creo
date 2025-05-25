@@ -1,0 +1,34 @@
+    /**
+     * Generates fake data for type {{this.return_type}}.
+     * Function name: {{this.function_name}}
+     */
+    public {{this.return_type}} {{this.function_name}}() {
+        {{#if this.is_object_type}}
+        Map<String, Object> obj = new HashMap<>();
+        {{#each this.properties}}
+        obj.put("{{this.name}}", {{{this.fake_function_call_java}}});
+        {{/each}}
+
+        if ("Map<String, Object>".equals("{{this.return_type}}")) {
+            return ({{this.return_type}}) (Object) obj;
+        } else {
+            try {
+                return {{{this.faker_expression_java}}};
+            } catch (Exception e) {
+                System.err.println("Could not generate fake object for {{this.return_type}} using expression, returning empty map/default.");
+                 if (List.class.isAssignableFrom({{this.return_type}}.class)) return ({{this.return_type}}) (Object) new ArrayList<>();
+                 if (Map.class.isAssignableFrom({{this.return_type}}.class)) return ({{this.return_type}}) (Object) new HashMap<>();
+                 try { return {{this.return_type}}.class.getDeclaredConstructor().newInstance(); } catch (Exception ex) { return null;}
+            }
+        }
+        {{else if this.is_array_type}}
+        List<{{this.array_item_type}}> list = new ArrayList<>();
+        int count = random.nextInt(3) + 1;
+        for (int i = 0; i < count; i++) {
+            list.add({{{this.array_item_fake_function_call_java}}});
+        }
+        return list;
+        {{else}}
+        return {{{this.faker_expression_java}}};
+        {{/if}}
+    }
