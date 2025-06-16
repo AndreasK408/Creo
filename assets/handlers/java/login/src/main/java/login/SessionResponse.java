@@ -14,6 +14,7 @@ class UserLoginData {
     private final String email;
     private final String passwordHash;
     private final Instant createdAt;
+
     UserLoginData(String id, String username, String email, String passwordHash, Instant createdAt) {
         this.id = id;
         this.username = username;
@@ -24,17 +25,22 @@ class UserLoginData {
 
     public static UserLoginData fromDocument(Document doc) {
         if (doc == null) return null;
-        ObjectId objectId = doc.getObjectId("_id");
-        String idStr = (objectId != null) ? objectId.toHexString() : doc.getString("id");
 
-        // In Python wird password_hash als bytes gespeichert, ich gehe davon aus,
-        // dass der PHC-String in der datenbank gespeichert wird.
-        String passwordHashStr = doc.getString("password_hash");
-        if (passwordHashStr == null && doc.get("password_hash") instanceof org.bson.BsonBinary) {
-            // Absicherung, falls es doch als BsonBinary gespeichert wird
-            passwordHashStr = new String(((org.bson.BsonBinary) doc.get("password_hash")).getData());
+        String idStr = null;
+        Object idObj = doc.get("_id");
+        if (idObj instanceof Long) {
+            idStr = ((Long) idObj).toString();
+        } else if (idObj instanceof ObjectId) {
+            idStr = ((ObjectId) idObj).toHexString();
+        } else if (idObj != null) {
+            System.err.println("Warning: UserLoginData.fromDocument encountered an unexpected type for _id: " + idObj.getClass().getName() + ", value: " + idObj);
+            idStr = idObj.toString();
         }
 
+        String passwordHashStr = doc.getString("password_hash");
+        if (passwordHashStr == null && doc.get("password_hash") instanceof org.bson.BsonBinary) {
+            passwordHashStr = new String(((org.bson.BsonBinary) doc.get("password_hash")).getData());
+        }
 
         Instant createdAtInstant = null;
         Object createdAtObj = doc.get("created_at");
@@ -45,6 +51,7 @@ class UserLoginData {
         } else if (createdAtObj instanceof Long) {
             createdAtInstant = Instant.ofEpochSecond((Long) createdAtObj);
         }
+
         return new UserLoginData(
                 idStr,
                 doc.getString("username"),

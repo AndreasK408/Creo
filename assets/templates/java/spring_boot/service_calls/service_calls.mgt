@@ -1,71 +1,191 @@
-package {{package_name}};
+package com.creo.generated.service.calls;
 
-// Standard Java und Spring Imports
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 import org.springframework.http.*;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.util.UriBuilder;
 import com.github.javafaker.Faker;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
+import java.net.URI;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Random;
-import java.util.Collections;
 
 {{#each imports}}
 {{{this}}};
 {{/each}}
 
 @Service
-public class {{service_calls_class_name}} {
+public class ServiceCallsClient {
 
-    private final RestTemplate restTemplate;
+    private final WebClient webClient;
     private final Faker faker;
     private final Random random;
+    private final ObjectMapper objectMapper;
 
-    public {{service_calls_class_name}}() {
-        this.restTemplate = new RestTemplate();
+    public ServiceCallsClient() {
+        this.webClient = WebClient.builder().build();
         this.faker = new Faker();
         this.random = new Random(System.currentTimeMillis());
+        this.objectMapper = new ObjectMapper();
+        this.objectMapper.registerModule(new JavaTimeModule());
     }
 
-    {{#each fake_data_functions}}
-    {{> fake_data_function_spring this}}
-
+    // Fake-Daten Generator für Objekte und Arrays
+    {{#each object_fake_functions}}
+    private Map<String, Object> {{this.name}}() {
+        System.out.println("[DEBUG] Generating fake object with factory '{{this.name}}'...");
+        Map<String, Object> obj = new HashMap<>();
+        {{#each this.props}}
+        {{#if this.required}}
+        obj.put("{{this.name}}", {{this.fake_func.name}}({{this.fake_func.args}}));
+        {{else}}
+        if (random.nextDouble() > {{this.exclude_probability}}) {
+            obj.put("{{this.name}}", {{this.fake_func.name}}({{this.fake_func.args}}));
+        }
+        {{/if}}
+        {{/each}}
+        System.out.println("[DEBUG]   -> Generated fake object: " + obj);
+        return obj;
+    }
     {{/each}}
 
+    {{#each array_fake_functions}}
+    private List<Object> {{this.name}}() {
+        System.out.println("[DEBUG] Generating fake array with factory '{{this.name}}'...");
+        List<Object> list = new ArrayList<>();
+        int count = ({{this.inclusive_min_items}} == {{this.exclusive_max_items}}) ? {{this.inclusive_min_items}} : random.nextInt({{this.inclusive_min_items}}, {{this.exclusive_max_items}});
+        for (int i = 0; i < count; i++) {
+            list.add({{this.fake_func.name}}({{this.fake_func.args}}));
+        }
+        System.out.println("[DEBUG]   -> Generated fake array with " + list.size() + " items.");
+        return list;
+    }
+    {{/each}}
+
+    //Generator für Query-Parameter-Daten
+    {{#each query_data_functions}}
+    private MultiValueMap<String, String> {{this.name}}() {
+        System.out.println("[DEBUG] Generating query parameters with factory '{{this.name}}'...");
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        {{#each this.params}}
+        {{#if this.nullable}}
+        if (random.nextDouble() > {{this.exclude_probability}}) {
+             params.add("{{this.name}}", String.valueOf({{{this.fake_func.name}}}({{{this.fake_func.args}}})));
+        }
+        {{else}}
+        params.add("{{this.name}}", String.valueOf({{{this.fake_func.name}}}({{{this.fake_func.args}}})));
+        {{/if}}
+        {{/each}}
+        System.out.println("[DEBUG]   -> Generated query params: " + params);
+        return params;
+    }
+    {{/each}}
+
+    //Generator für individuelle Service-Aufrufe
     {{#each service_call_functions}}
-    public void {{this.function_name}}() {
-        System.out.println("Executing grouped service calls for {{this.function_name}}");
-        {{#each this.individual_calls}}
-        try {
-            Object response = this.{{this.individual_call_function_name}}();
-            System.out.println("Call to {{this.target_service_name}}.{{this.target_endpoint_path}} (part of {{../function_name}}) responded: " + (response != null ? response.toString().substring(0, Math.min(response.toString().length(), 100)) : "null"));
-        } catch (Exception e) {
-            System.err.println("Error during individual call {{this.individual_call_function_name}} (part of {{../function_name}}): " + e.getMessage());
+        {{#each this.get_service_calls}}
+        // Methode für GET-Aufruf
+        private Mono<Object> {{this.name}}() {
+            String host = System.getenv("{{this.host_env_var}}");
+            if (host == null || host.isEmpty()) {
+                System.err.println("[ERROR] Env var '{{this.host_env_var}}' not set.");
+                return Mono.empty();
+            }
+            String baseUrl = "http://" + host + ":80";
+            String path = "{{this.path}}";
+
+            return this.webClient.get().uri(uriBuilder -> {
+                uriBuilder.scheme("http").host(host).port(80).path(path);
+                {{#if this.requires_data}}
+                uriBuilder.queryParams(this.{{this.query_data_func}}());
+                {{/if}}
+                URI finalUri = uriBuilder.build();
+                System.out.println("[DEBUG] Attempting to GET URL: " + finalUri.toString());
+                return finalUri;
+            })
+            .exchangeToMono(response -> {
+                            System.out.println("[DEBUG] Received response for GET " + baseUrl + path + " with status: " + response.statusCode());
+                            if (response.statusCode().isError()) {
+                                // logge Fehler, fahre dann fort
+                                return response.bodyToMono(String.class)
+                                               .defaultIfEmpty("[No response body]")
+                                               .doOnNext(body -> System.err.println("[ERROR] Call failed with status " + response.statusCode() + ". Body: " + body))
+                                               .then(Mono.empty()); // leeres mono damit ablauf nicht abgebrochen wird
+                            }
+                            return response.bodyToMono(Object.class)
+                                           .doOnSuccess(body -> System.out.println("[SUCCESS] Call to " + baseUrl + path + " was successful."));
+                        })
+                        .onErrorResume(e -> {
+                            System.err.println("[FATAL] Network-level error calling " + baseUrl + path + ": " + e.getMessage());
+                            return Mono.empty();
+                        });
         }
         {{/each}}
+
+        {{#each this.post_service_calls}}
+        // Methode für POST-Aufruf
+        private Mono<Object> {{this.name}}() {
+            String host = System.getenv("{{this.host_env_var}}");
+            if (host == null || host.isEmpty()) {
+                System.err.println("[ERROR] Env var '{{this.host_env_var}}' not set.");
+                return Mono.empty();
+            }
+            String baseUrl = "http://" + host + ":80";
+            String path = "{{this.path}}";
+            return this.webClient.post().uri(uriBuilder -> {
+                            uriBuilder.scheme("http").host(host).port(80).path(path);
+                            {{#if this.requires_query_data}}
+                            uriBuilder.queryParams(this.{{this.query_data_func}}());
+                            {{/if}}
+                            return uriBuilder.build();
+                        })
+                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                        .bodyValue(this.{{this.body_data_func}}())
+                        .exchangeToMono(response -> {
+                            System.out.println("[DEBUG] Received response for POST " + baseUrl + path + " with status: " + response.statusCode());
+                            if (response.statusCode().isError()) {
+                                return response.bodyToMono(String.class)
+                                               .defaultIfEmpty("[No response body]")
+                                               .doOnNext(body -> System.err.println("[ERROR] Call failed with status " + response.statusCode() + ". Body: " + body))
+                                               .then(Mono.empty());
+                            }
+                            return response.bodyToMono(Object.class)
+                                           .doOnSuccess(body -> System.out.println("[SUCCESS] Call to " + baseUrl + path + " was successful."));
+                        })
+                        .onErrorResume(e -> {
+                            System.err.println("[FATAL] Network-level error calling " + baseUrl + path + ": " + e.getMessage());
+                            return Mono.empty();
+                        });
+                    }
+        {{/each}}
+    {{/each}}
+
+    // orchestrierungs mehtoden
+    {{#each service_call_functions}}
+    public void serviceCallsForEndpoint{{@index}}() {
+        System.out.println("\n--- Orchestrating all calls for Endpoint {{@index}} ---");
+        List<Mono<?>> serviceCallMonos = new ArrayList<>();
+        {{#each this.get_service_calls}} serviceCallMonos.add(this.{{this.name}}()); {{/each}}
+        {{#each this.post_service_calls}} serviceCallMonos.add(this.{{this.name}}()); {{/each}}
+
+        if (!serviceCallMonos.isEmpty()) {
+            try {
+                Mono.zip(serviceCallMonos, results -> results).block();
+                System.out.println("[SUCCESS] All concurrent calls for Endpoint {{@index}} have completed.");
+            } catch (Exception e) {
+                System.err.println("[ERROR] An error occurred while waiting for all service calls for Endpoint {{@index}}: " + e.getMessage());
+            }
+        } else {
+            System.out.println("[WARNING] No service calls to execute for Endpoint {{@index}}.");
+        }
     }
-
-    {{/each}}
-
-    {{#each service_call_functions}}
-    {{#each this.individual_calls}}
-    {{> individual_service_call_spring this}}
-
-    {{/each}}
-    {{/each}}
-    {{#each service_call_functions}}
-    {{#each this.individual_calls}}
-    {{#if this.query_data_function_name}}
-    {{> query_data_function_spring this}}
-    {{/if}}
-    {{#if this.complex_param_function_name}}
-    {{> complex_param_function_spring this}}
-    {{/if}}
-    {{/each}}
     {{/each}}
 }

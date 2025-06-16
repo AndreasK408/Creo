@@ -1,4 +1,4 @@
-import_path: read_user
+import_path: user_read.UserReadHandler
 description: "Simple CRUD operations for an user entity"
 is_async: true
 returns: true
@@ -6,9 +6,9 @@ depends_on:
   - name: db:mongo
     init: seed-user
 signature:
-  function: read_user_by_id
+  function: readUserById
   parameters:
     - arg: 0
       type: integer
       minimum: 1
-      maximum: 300000
+      maximum: 3000000

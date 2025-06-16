@@ -1,6 +1,6 @@
-    /**
-     * Generates the request body of type {{this.complex_param_type}} for {{this.target_service_name}}{{this.target_endpoint_path}}.
-     */
-    private {{this.complex_param_type}} {{this.complex_param_function_name}}() {
-        return {{{this.complex_param_faker_function_call_java}}}();
-    }
+/**
+ * wird aktuell nicht benutzt; Funktionalität aus service_calls.mgt könnte hier her ausgelagert werden
+ */
+private {{this.complex_param_type}} {{this.complex_param_function_name}}() {
+    return {{{this.complex_param_faker_function_call_java}}};
+}

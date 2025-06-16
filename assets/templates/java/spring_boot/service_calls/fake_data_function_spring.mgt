@@ -1,34 +1,29 @@
-    /**
-     * Generates fake data for type {{this.return_type}}.
-     * Function name: {{this.function_name}}
-     */
-    public {{this.return_type}} {{this.function_name}}() {
-        {{#if this.is_object_type}}
-        Map<String, Object> obj = new HashMap<>();
-        {{#each this.properties}}
+/**
+ * wird aktuell nicht benutzt; Funktionalität aus service_calls.mgt könnte hier her ausgelagert werden
+ */
+public {{#if this.is_object_type}}Map<String, Object>{{else if this.is_array_type}}List<Object>{{else}}{{this.return_type}}{{/if}} {{this.function_name}}() {
+    {{#if this.is_object_type}}
+    Map<String, Object> obj = new HashMap<>();
+    {{#each this.properties}}
+    {{#if this.is_optional}}
+    if (random.nextDouble() > {{this.exclude_probability}}) {
         obj.put("{{this.name}}", {{{this.fake_function_call_java}}});
-        {{/each}}
-
-        if ("Map<String, Object>".equals("{{this.return_type}}")) {
-            return ({{this.return_type}}) (Object) obj;
-        } else {
-            try {
-                return {{{this.faker_expression_java}}};
-            } catch (Exception e) {
-                System.err.println("Could not generate fake object for {{this.return_type}} using expression, returning empty map/default.");
-                 if (List.class.isAssignableFrom({{this.return_type}}.class)) return ({{this.return_type}}) (Object) new ArrayList<>();
-                 if (Map.class.isAssignableFrom({{this.return_type}}.class)) return ({{this.return_type}}) (Object) new HashMap<>();
-                 try { return {{this.return_type}}.class.getDeclaredConstructor().newInstance(); } catch (Exception ex) { return null;}
-            }
-        }
-        {{else if this.is_array_type}}
-        List<{{this.array_item_type}}> list = new ArrayList<>();
-        int count = random.nextInt(3) + 1;
-        for (int i = 0; i < count; i++) {
-            list.add({{{this.array_item_fake_function_call_java}}});
-        }
-        return list;
-        {{else}}
-        return {{{this.faker_expression_java}}};
-        {{/if}}
     }
+    {{else}}
+    obj.put("{{this.name}}", {{{this.fake_function_call_java}}});
+    {{/if}}
+    {{/each}}
+    return "Map<String, Object>".equals("{{this.return_type}}") ? obj : this.objectMapper.convertValue(obj, {{this.return_type}}.class);
+
+    {{else if this.is_array_type}}
+    List<Object> list = new ArrayList<>();
+    int count = ({{this.inclusive_min_items}} == {{this.exclusive_max_items}}) ? {{this.inclusive_min_items}} : random.nextInt({{this.inclusive_min_items}}, {{this.exclusive_max_items}});
+    for (int i = 0; i < count; i++) {
+        list.add({{{this.array_item_fake_function_call_java}}});
+    }
+    return list;
+
+    {{else}}
+    return {{{this.faker_expression_java}}};
+    {{/if}}
+}

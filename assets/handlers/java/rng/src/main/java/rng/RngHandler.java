@@ -16,7 +16,7 @@ public class RngHandler {
             min = max;
             max = temp;
         }
-        List<Integer> numbers = new ArrayList<>();
+        List<Integer> numbers = new ArrayList<>(n);
         for (int i = 0; i < n; i++) {
             numbers.add(random.nextInt((max - min) + 1) + min);
         }

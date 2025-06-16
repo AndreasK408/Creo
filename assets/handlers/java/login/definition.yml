@@ -1,29 +1,19 @@
 import_path: login.LoginHandler
-
 description: "Login a user using username/email and password authentication."
-
 is_async: false
-
 returns: true
-
 depends_on:
   - name: db:mongo
     init: seed-login
-
 signature:
   function: loginWithUsernameOrEmail
-
   parameters:
     - arg: 0
-      name: usernameOrEmail
       type: string
-      minLength: 3
-      maxLength: 64
-      description: "The username or email of the user."
-
+      minimum: 3
+      maximum: 64
     - arg: 1
-      name: password
       type: string
-      minLength: 6
-      maxLength: 48
-      description: "The plain text password of the user."
+      minimum: 6
+      maximum: 48
+

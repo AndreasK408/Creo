@@ -1,50 +1,46 @@
-         /**
-         * POST {{this.path}}
-         {{#if this.description}}
-         * {{this.description}}
-         {{/if}}
-         */
-        @PostMapping(path = "{{this.path}}")
-        public ResponseEntity<?> {{this.name}}(
-            {{#if this.query_params}}
-            {{#each this.query_params as |qp|}}
-            @RequestParam(name = "{{qp.name}}") {{qp.param_type}} {{qp.name}},
+/**
+ * POST {{this.path}}
+ {{#if this.description}}
+ * {{this.description}}
+ {{/if}}
+ */
+@PostMapping(path = "{{this.path}}")
+public ResponseEntity<?> {{this.name}}(
+    {{#if this.query_params}}
+    {{#each this.query_params as |qp|}}
+    @RequestParam(name = "{{qp.name}}") {{qp.param_type}} {{qp.name}},
+    {{/each}}
+    {{/if}}
+    @RequestBody byte[] {{this.body_param_name}}
+) {
+    try {
+        {{#if this.has_service_calls}}
+        // methode auf inizierter instanz aufrufen
+        this.serviceCallsClient.{{this.service_call_function_name}}();
+        {{/if}}
+
+        {{#if this.has_return_type}}
+        Object result = {{this.handler_func_name}}(
+            {{#each this.handler_args as |arg|}}
+            {{#if arg.is_body_arg}}{{../this.body_param_name}}{{else}}{{arg.name}}{{/if}}{{#unless @last}}, {{/unless}}
             {{/each}}
-            {{/if}}
-            @RequestBody byte[] {{this.body_param_name}}
-        ) {
-            try {
-                {{#if this.has_return_type}}
-                Object result = {{this.handler_func_name}}(
-                    {{#each this.handler_args as |arg|}}
-                    {{#if arg.is_body_arg}}{{../this.body_param_name}}{{else}}{{arg.name}}{{/if}}{{#unless @last}}, {{/unless}}
-                    {{/each}}
-                );
-                {{else}}
-                {{this.handler_func_name}}(
-                    {{#each this.handler_args as |arg|}}
-                    {{#if arg.is_body_arg}}{{../this.body_param_name}}{{else}}{{arg.name}}{{/if}}{{#unless @last}}, {{/unless}}
-                    {{/each}}
-                );
-                {{/if}}
-
-                {{#if this.has_service_calls}}
-                System.out.println("Executing service calls for POST {{this.path}}...");
-                {{{this.service_call_function_name}}}();
-                {{/if}}
-
-                {{#if this.has_return_type}}
-                return ResponseEntity.status(HttpStatus.CREATED).body(result);
-                {{else}}
-                return ResponseEntity.status(HttpStatus.ACCEPTED).build();
-                {{/if}}
-            } catch (IllegalArgumentException e) {
-                System.err.println("Client error in POST {{this.path}}: " + e.getMessage());
-                return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-            } catch (Exception e) {
-                System.err.println("Server error in POST {{this.path}}: " + e.getMessage());
-                e.printStackTrace();
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "An internal server error occurred."));
-            }
-        }
+        );
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+        {{else}}
+        {{this.handler_func_name}}(
+            {{#each this.handler_args as |arg|}}
+            {{#if arg.is_body_arg}}{{../this.body_param_name}}{{else}}{{arg.name}}{{/if}}{{#unless @last}}, {{/unless}}
+            {{/each}}
+        );
+        return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+        {{/if}}
+    } catch (IllegalArgumentException e) {
+        System.err.println("Client error in POST {{this.path}}: " + e.getMessage());
+        return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+    } catch (Exception e) {
+        System.err.println("Server error in POST {{this.path}}: " + e.getMessage());
+        e.printStackTrace();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "An internal server error occurred."));
+    }
+}
     

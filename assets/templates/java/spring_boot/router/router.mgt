@@ -1,33 +1,49 @@
-    package com.creo.generated.service.controller; // Festes Paket
+package com.creo.generated.service.controller;
 
-    import org.springframework.http.ResponseEntity;
-    import org.springframework.http.HttpStatus;
-    import org.springframework.web.bind.annotation.*;
-    import java.util.Map;
-    import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+import java.util.Map;
+import java.util.List;
 
-    {{#each this.handler_func_imports}}
-    {{{this.import}}};
-    {{/each}}
+{{#if this.service_call_imports}}
+import com.creo.generated.service.calls.ServiceCallsClient;
+{{/if}}
 
-    {{#each this.service_call_imports}}
-    {{{this.import}}};
-    {{/each}}
+{{#each this.handler_func_imports}}
+{{{this.import}}};
+{{/each}}
 
-    {{#each this.type_imports}}
-    {{{this.import}}};
-    {{/each}}
+{{#each this.type_imports}}
+{{{this.import}}};
+{{/each}}
 
-    @RestController
-    @RequestMapping("/") // Fester Basis-Pfad
-    public class ServiceController { // Fester Controller-Klassenname
+@RestController
+@RequestMapping("/")
+public class ServiceController {
 
-        {{#each this.http_get_operations}}
-        {{> get_operation_spring this}}
-        {{/each}}
+    {{#if this.service_call_imports}}
+    //Feld und Konstruktor für Dependency Injection (nur wenn Service Calls existieren)
+    private final ServiceCallsClient serviceCallsClient;
 
-        {{#each this.http_post_operations}}
-        {{> post_operation_spring this}}
-        {{/each}}
+    @Autowired
+    public ServiceController(ServiceCallsClient serviceCallsClient) {
+        this.serviceCallsClient = serviceCallsClient;
     }
+    {{else}}
+    //Leerer Standard-Konstruktor (wenn KEINE Service Calls existieren)
+    public ServiceController() {
+        // serviceCallClient wird nihct benötigt
+    }
+    {{/if}}
+
+    {{#each this.http_get_operations}}
+    {{> get_operation_spring this}}
+    {{/each}}
+
+    {{#each this.http_post_operations}}
+    {{> post_operation_spring this}}
+    {{/each}}
+}
     

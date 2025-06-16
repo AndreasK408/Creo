@@ -43,7 +43,6 @@ public class Main {
         MongoCollection<Document> collection = null;
         try {
             collection = DbManager.getLoginCollection();
-            // Explizite Log-Ausgabe für DB und Collection
             System.out.println("Seed-Login: Obtained collection '" + DbManager.COLLECTION_NAME + "' in database '" + DbManager.DB_NAME + "'.");
 
             try {
@@ -68,11 +67,10 @@ public class Main {
             long currentBatchStartTime = System.currentTimeMillis();
 
             for (int i = 1; i <= seedCount; i++) {
-                User userPojo = new User(); // neuer Konstruktor ohne ID
-                Document userDoc = userPojo.toDocument(); // Zu Document konvertieren
+                User userPojo = new User(i);
+                Document userDoc = userPojo.toDocument();
 
-                System.out.println("Seed-Login: Preparing to insert user _id: " + userDoc.getObjectId("_id") + ", username: " + userDoc.getString("username"));
-
+                System.out.println("Seed-Login: Preparing to insert user _id: " + userDoc.getLong("_id") + ", username: " + userDoc.getString("username"));
 
                 userBatch.add(userDoc);
 

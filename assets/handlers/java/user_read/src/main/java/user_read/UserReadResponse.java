@@ -24,23 +24,37 @@ public class UserReadResponse {
         if (doc == null) {
             return null;
         }
-        ObjectId objectId = doc.getObjectId("_id");
-        String idString = (objectId != null) ? objectId.toHexString() : null;
+
+        String idString = null;
+        Object idObj = doc.get("_id");
+
+        if (idObj instanceof Long) {
+            idString = ((Long) idObj).toString();
+        } else if (idObj instanceof ObjectId) {
+            idString = ((ObjectId) idObj).toHexString();
+            System.err.println("Hinweis in UserReadResponse.fromDocument: _id war eine ObjectId: " + idString);
+        } else if (idObj != null) {
+            // Für andere unerwartete Typen
+            System.err.println("Warnung in UserReadResponse.fromDocument: _id hat einen unerwarteten Typ: " + idObj.getClass().getName() + ", Wert: " + idObj);
+            idString = idObj.toString();
+        }
+
         String username = doc.getString("username");
         String email = doc.getString("email");
-        long createdAtTimestamp = 0; // Standardwert
+
+        long createdAtTimestamp = 0;
         Object createdAtObj = doc.get("created_at");
         if (createdAtObj instanceof Date) {
             createdAtTimestamp = ((Date) createdAtObj).getTime() / 1000L;
         } else if (createdAtObj instanceof Instant) {
             createdAtTimestamp = ((Instant) createdAtObj).getEpochSecond();
         } else if (createdAtObj instanceof Long) {
-            // Falls es bereits als Long (Sekunden oder Millisekunden) gespeichert ist
-            // Hier gehe ich von Sekunden aus, ansonsten sind Anpassung nötig
             createdAtTimestamp = (Long) createdAtObj;
         }
+
         return new UserReadResponse(idString, username, email, createdAtTimestamp);
     }
+
     @JsonProperty("id")
     public String getId() { return id; }
     @JsonProperty("username")

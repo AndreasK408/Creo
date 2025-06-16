@@ -1,10 +1,16 @@
-    /**
-     * Generates query parameters for the call to {{this.target_service_name}}{{this.target_endpoint_path}}.
-     */
-    private MultiValueMap<String, String> {{this.query_data_function_name}}() {
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        {{#each this.query_params}}
-        params.add("{{this.name}}", String.valueOf({{{this.fake_function_call_java}}}()));
-        {{/each}}
-        return params;
+/**
+ * wird aktuell nicht benutzt; Funktionalität aus service_calls.mgt könnte hier her ausgelagert werden
+ */
+private MultiValueMap<String, String> {{this.name}}() {
+    MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+    {{#each this.params}}
+    {{#if this.nullable}}
+    if (random.nextDouble() > {{this.exclude_probability}}) {
+         params.add("{{this.name}}", String.valueOf({{{this.fake_func.name}}}({{{this.fake_func.args}}})));
     }
+    {{else}}
+    params.add("{{this.name}}", String.valueOf({{{this.fake_func.name}}}({{{this.fake_func.args}}})));
+    {{/if}}
+    {{/each}}
+    return params;
+}

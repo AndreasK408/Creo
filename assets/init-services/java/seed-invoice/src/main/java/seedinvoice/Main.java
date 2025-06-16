@@ -44,7 +44,6 @@ public class Main {
             long currentBatchStartTime = System.currentTimeMillis();
 
             for (int i = 1; i <= seedCount; i++) {
-                // Die ID 'i' wird als long übergeben
                 Invoice invoice = new Invoice(i);
                 invoiceBatch.add(invoice.toDocument());
 
@@ -65,9 +64,9 @@ public class Main {
         } catch (Exception e) {
             System.err.println("Seed-Invoice: An error occurred during database seeding: " + e.getMessage());
             e.printStackTrace();
-            System.exit(1); // Beende mit Fehlercode
+            System.exit(1);
         } finally {
-            DbManager.closeConnection(); // Wichtig, um Ressourcen freizugeben
+            DbManager.closeConnection();
         }
         System.out.println("Seed-Invoice (Java) finished in " + (System.currentTimeMillis() - startTime) + "ms.");
     }

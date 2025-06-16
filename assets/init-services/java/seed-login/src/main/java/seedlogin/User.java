@@ -3,13 +3,14 @@ package seedlogin;
 import com.github.javafaker.Faker;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
-import org.bson.types.ObjectId;
+import org.bson.Document;
 
 import java.time.Instant;
 import java.util.Locale;
+import java.util.Date;
 
 public class User {
-    private org.bson.types.ObjectId id;
+    private long id;
     private String username;
     private String email;
     private String passwordHash;
@@ -22,9 +23,12 @@ public class User {
     private static final int HASH_PARALLELISM = 1;
     private static final int DUMMY_PASSWORD_LENGTH = 12;
 
-    public User() {
-        this.id = new ObjectId();
+    public User(long id) {
+        this.id = id;
         String rawUsername = faker.name().username().replaceAll("[^a-zA-Z0-9.-]", "");
+        if (rawUsername.trim().isEmpty()){
+            rawUsername = "user" + this.id;
+        }
         this.username = rawUsername.substring(0, Math.min(rawUsername.length(), 30));
         this.email = faker.internet().emailAddress();
         char[] dummyPasswordChars = faker.lorem().characters(DUMMY_PASSWORD_LENGTH, DUMMY_PASSWORD_LENGTH + 5, true, true).toCharArray();
@@ -36,11 +40,25 @@ public class User {
         this.createdAt = Instant.now();
     }
 
-    public ObjectId getId() {return id;}
-    public String getUsername() { return username; }
-    public String getEmail() { return email; }
-    public String getPasswordHash() { return passwordHash; }
-    public Instant getCreatedAt() { return createdAt; }
+    public long getId() {
+        return id;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
 
     public org.bson.Document toDocument() {
         return new org.bson.Document("_id", this.id)
@@ -49,6 +67,4 @@ public class User {
                 .append("password_hash", this.passwordHash)
                 .append("created_at", java.util.Date.from(this.createdAt));
     }
-
 }
-     

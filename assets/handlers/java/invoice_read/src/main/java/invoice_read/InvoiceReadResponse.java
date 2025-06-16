@@ -41,7 +41,8 @@ class Item {
     static Item fromDocument(Document doc) {
         if (doc == null) return null;
         Item item = new Item();
-        item.priceInCents = doc.getInteger("price_in_cents", 0);
+        Long priceLong = doc.getLong("price_in_cents");
+        item.priceInCents = (priceLong != null) ? priceLong.intValue() : 0;
         item.name = doc.getString("name");
         return item;
     }
@@ -55,7 +56,8 @@ class OrderItem {
         if (doc == null) return null;
         OrderItem orderItem = new OrderItem();
         orderItem.item = Item.fromDocument(doc.get("item", Document.class));
-        orderItem.quantity = doc.getInteger("quantity", 0);
+        Long quantityLong = doc.getLong("quantity");
+        orderItem.quantity = (quantityLong != null) ? quantityLong.intValue() : 0;
         return orderItem;
     }
 }
@@ -98,8 +100,8 @@ public class InvoiceReadResponse {
         if (doc == null) {
             return null;
         }
-        ObjectId objectId = doc.getObjectId("_id");
-        String idString = (objectId != null) ? objectId.toHexString() : null;
+        Long idLong = doc.getLong("_id");
+        String idString = (idLong != null) ? idLong.toString() : null;
         List<Document> itemDocs = doc.getList("items", Document.class, new ArrayList<>());
         List<OrderItem> orderItems = itemDocs.stream()
                 .map(OrderItem::fromDocument)

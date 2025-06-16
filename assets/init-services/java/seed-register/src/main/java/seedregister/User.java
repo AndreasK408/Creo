@@ -3,9 +3,11 @@ package seedregister;
 import com.github.javafaker.Faker;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
+import org.bson.Document;
 
 import java.time.Instant;
 import java.util.Locale;
+import java.util.Date;
 
 public class User {
     private long id;
@@ -23,7 +25,13 @@ public class User {
 
     public User(long id) {
         this.id = id;
-        this.username = faker.name().username().replaceAll("[^a-zA-Z0-9.-]", "").substring(0, Math.min(faker.name().username().length(), 30));
+        String rawUsernameFaker = faker.name().username();
+        String cleanedUsername = rawUsernameFaker.replaceAll("[^a-zA-Z0-9.-]", "");
+        if (cleanedUsername.trim().isEmpty()) {
+            cleanedUsername = "user" + id;
+        }
+        this.username = cleanedUsername.substring(0, Math.min(cleanedUsername.length(), 30));
+
         this.email = faker.internet().emailAddress();
         char[] dummyPasswordChars = faker.lorem().characters(DUMMY_PASSWORD_LENGTH, DUMMY_PASSWORD_LENGTH + 5, true, true).toCharArray();
         try {
@@ -48,4 +56,3 @@ public class User {
                 .append("created_at", java.util.Date.from(this.createdAt));
     }
 }
-     

@@ -29,7 +29,7 @@ class CreateUserInput {
 }
 
 class UserDbRecord {
-    private final String id; // _id aus MongoDB als String
+    private final String id;
     private final String username;
     private final String email;
 
@@ -38,10 +38,22 @@ class UserDbRecord {
         this.username = username;
         this.email = email;
     }
+
     public static UserDbRecord fromDocument(Document doc) {
         if (doc == null) return null;
-        ObjectId objectId = doc.getObjectId("_id");
-        String idStr = (objectId != null) ? objectId.toHexString() : doc.getString("id");
+
+        String idStr = null;
+        Object idObj = doc.get("_id");
+
+        if (idObj instanceof Long) {
+            idStr = ((Long) idObj).toString();
+        } else if (idObj instanceof ObjectId) {
+            idStr = ((ObjectId) idObj).toHexString();
+        } else if (idObj != null) {
+            System.err.println("Warnung: UserDbRecord.fromDocument - _id hat einen unerwarteten Typ: " + idObj.getClass().getName() + ", Wert: " + idObj);
+            idStr = idObj.toString();
+        }
+
         return new UserDbRecord(
                 idStr,
                 doc.getString("username"),

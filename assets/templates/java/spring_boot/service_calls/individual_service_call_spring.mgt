@@ -1,43 +1,33 @@
-    /**
-     * Performs an individual service call to {{this.target_service_name}}{{this.target_endpoint_path}}.
-     * Method: {{this.http_method_uppercase}}
-     */
-    private Object {{this.individual_call_function_name}}() {
-        String baseUrl = "http://{{this.target_service_name}}:80";
-        String url = baseUrl + "{{this.target_endpoint_path}}";
-
-        HttpMethod method = HttpMethod.valueOf("{{this.http_method_uppercase}}");
-        HttpHeaders headers = new HttpHeaders();
-        {{#if this.is_post_or_put_request}}
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        {{/if}}
-        HttpEntity<?> requestEntity;
-
-        {{#if this.is_post_or_put_request}}
-        {{this.complex_param_type}} bodyData = null;
-        {{#if this.complex_param_function_name}}
-        bodyData = this.{{this.complex_param_function_name}}();
-        {{/if}}
-        requestEntity = new HttpEntity<>(bodyData, headers);
-        {{else}}
-        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(url);
-        {{#if this.query_data_function_name}}
-        MultiValueMap<String, String> queryParams = this.{{this.query_data_function_name}}();
-        uriBuilder.queryParams(queryParams);
-        {{/if}}
-        url = uriBuilder.toUriString();
-        requestEntity = new HttpEntity<>(headers);
-        {{/if}}
-        System.out.println("Making " + method + " request to: " + url + (requestEntity.getBody() != null ? " with body" : ""));
-
-        try {
-            ResponseEntity<String> response = restTemplate.exchange(url, method, requestEntity, String.class);
-            return response.getBody();
-        } catch (org.springframework.web.client.HttpClientErrorException e) {
-            System.err.println("HTTP Client Error calling " + url + ": " + e.getStatusCode() + " - " + e.getResponseBodyAsString());
-            throw e;
-        } catch (org.springframework.web.client.RestClientException e) {
-            System.err.println("REST Client Error calling " + url + ": " + e.getMessage());
-            throw e;
-        }
+/**
+ * wird aktuell nicht benutzt; Funktionalität aus service_calls.mgt könnte hier her ausgelagert werden
+ */
+private Mono<Object> {{this.name}}() {
+    String host = System.getenv("{{this.host_env_var}}");
+    if (host == null || host.isEmpty()) {
+        String errorMessage = "ERROR: Environment variable '{{this.host_env_var}}' is not set!";
+        System.err.println(errorMessage);
+        return Mono.error(new IllegalStateException(errorMessage));
     }
+
+    String baseUrl = "http://" + host + ":80";
+    String path = "{{this.path}}";
+
+    return this.webClient
+        .method(HttpMethod.valueOf("{{this.http_method_uppercase}}"))
+        .uri(uriBuilder -> {
+            uriBuilder.scheme("http").host(host).port(80).path(path);
+            {{#if this.requires_data}}
+            String fakeHashInput = faker.lorem().characters(10, 30, true, true);
+            System.out.println("[DEBUG]   Generated fake data for positional0: '" + fakeHashInput + "'");
+            uriBuilder.queryParam("positional0", fakeHashInput);
+            {{/if}}
+
+            URI finalUri = uriBuilder.build();
+            System.out.println("[DEBUG]   Final URI constructed for {{this.name}}: " + finalUri.toString());
+            return finalUri;
+        })
+        .retrieve()
+        .bodyToMono(Object.class)
+        .doOnError(e -> System.err.println("ERROR calling " + baseUrl + path + ": " + e.getMessage()))
+        .onErrorResume(e -> Mono.empty());
+}

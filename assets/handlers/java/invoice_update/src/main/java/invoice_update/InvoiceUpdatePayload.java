@@ -35,11 +35,11 @@ class Address {
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 class Item {
-    final int priceInCents;
+    final long priceInCents;
     final String name;
 
     @JsonCreator
-    Item(@JsonProperty("price_in_cents") int priceInCents, @JsonProperty("name") String name) {
+    Item(@JsonProperty("price_in_cents") long priceInCents, @JsonProperty("name") String name) {
         this.priceInCents = priceInCents;
         this.name = name;
     }
@@ -48,10 +48,10 @@ class Item {
 @JsonIgnoreProperties(ignoreUnknown = true)
 class OrderItem {
     final Item item;
-    final int quantity;
+    final long quantity;
 
     @JsonCreator
-    OrderItem(@JsonProperty("item") Item item, @JsonProperty("quantity") int quantity) {
+    OrderItem(@JsonProperty("item") Item item, @JsonProperty("quantity") long quantity) {
         this.item = item;
         this.quantity = quantity;
     }

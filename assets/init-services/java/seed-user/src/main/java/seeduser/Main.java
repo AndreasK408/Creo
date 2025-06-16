@@ -59,9 +59,9 @@ public class Main {
         } catch (Exception e) {
             System.err.println("Seed-User: An error occurred during database seeding: " + e.getMessage());
             e.printStackTrace();
-            System.exit(1); // Beende mit Fehlercode
+            System.exit(1);
         } finally {
-            DbManager.closeConnection(); // Wichtig, um Ressourcen freizugeben
+            DbManager.closeConnection();
         }
         System.out.println("Seed-User (Java) finished.");
     }

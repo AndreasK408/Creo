@@ -44,13 +44,13 @@ impl template::Fakeable for Faker {
 
     fn get_object_fake(&self, function_name: &str) -> template::FakeFunction {
         template::FakeFunction::new(
-            format!("this.{}()", function_name),
+            format!("this.{}", function_name),
             String::new(),
         )
     }
     fn get_array_fake(&self, function_name: &str) -> template::FakeFunction {
         template::FakeFunction::new(
-            format!("this.{}()", function_name),
+            format!("this.{}", function_name),
             String::new(),
         )
     }
